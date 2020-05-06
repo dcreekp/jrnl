@@ -107,7 +107,7 @@ class YAMLExporter(TextExporter):
         # source directory is  entry.journal.config['journal']
         # output directory is...?
 
-        return "title: {title}\ndate: {date}\nstarred: {starred}\ntags: {tags}\n{dayone} {body} {space}".format(
+        return "---\ntitle: {title}\ndate: {date}\nstarred: {starred}\ntags: {tags}\n\n---\n{dayone} {body} {space}".format(
             date=date_str,
             title=entry.title,
             starred=entry.starred,
