@@ -10,6 +10,7 @@ from .xml_exporter import XMLExporter
 from .yaml_exporter import YAMLExporter
 from .template_exporter import __all__ as template_exporters
 from .fancy_exporter import FancyExporter
+from .eleventy_exporter import EleventyExporter
 
 __exporters = [
     JSONExporter,
@@ -19,6 +20,7 @@ __exporters = [
     XMLExporter,
     YAMLExporter,
     FancyExporter,
+    EleventyExporter,
 ] + template_exporters
 __importers = [JRNLImporter]
 

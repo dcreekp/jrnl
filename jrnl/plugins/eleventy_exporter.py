@@ -5,14 +5,20 @@ from .text_exporter import TextExporter
 import os
 import re
 import sys
+from ..util import slugify
 from ..util import WARNING_COLOR, ERROR_COLOR, RESET_COLOR
 
 
-class YAMLExporter(TextExporter):
-    """This Exporter can convert entries and journals into Markdown formatted text with YAML front matter."""
+class EleventyExporter(TextExporter):
+    """This Exporter can convert entries and journals into Markdown formatted
+    text with YAML front matter specifically for 11ty."""
 
-    names = ["yaml"]
+    names = ["11ty"]
     extension = "md"
+
+    @classmethod
+    def make_filename(cls, entry):
+        return f'{ slugify(str(entry.title)) }.{ cls.extension }'
 
     @classmethod
     def export_entry(cls, entry, to_multifile=True):
@@ -77,42 +83,18 @@ class YAMLExporter(TextExporter):
                 file=sys.stderr,
             )
 
-        dayone_attributes = ""
-        if hasattr(entry, "uuid"):
-            dayone_attributes += "uuid: " + entry.uuid + "\n"
-        if (
-            hasattr(entry, "creator_device_agent")
-            or hasattr(entry, "creator_generation_date")
-            or hasattr(entry, "creator_host_name")
-            or hasattr(entry, "creator_os_agent")
-            or hasattr(entry, "creator_software_agent")
-        ):
-            dayone_attributes += "creator:\n"
-            if hasattr(entry, "creator_device_agent"):
-                dayone_attributes += f"    device agent: {entry.creator_device_agent}\n"
-            if hasattr(entry, "creator_generation_date"):
-                dayone_attributes += "    generation date: {}\n".format(
-                    str(entry.creator_generation_date)
-                )
-            if hasattr(entry, "creator_host_name"):
-                dayone_attributes += f"    host name: {entry.creator_host_name}\n"
-            if hasattr(entry, "creator_os_agent"):
-                dayone_attributes += f"    os agent: {entry.creator_os_agent}\n"
-            if hasattr(entry, "creator_software_agent"):
-                dayone_attributes += (
-                    f"    software agent: {entry.creator_software_agent}\n"
-                )
+        title = entry.title.replace('@', '').replace(':', '')
+        tags = list(
+            set([entry.journal.name] + [tag[1:] for tag in entry.tags])
+        )
+        permalink = f'{ entry.journal.name }/{ slugify(str(entry.title)) }/'
 
-        # TODO: copy over pictures, if present
-        # source directory is  entry.journal.config['journal']
-        # output directory is...?
-
-        return "title: {title}\ndate: {date}\nstarred: {starred}\ntags: {tags}\n{dayone} {body} {space}".format(
+        return '---\ntitle: {title}\ndate: {date}\nstarred: {starred}\nlayout: "entries"\ntags: {tags}\npermalink: "{permalink}"\n\n---\n## {title}\n{body} {space}'.format(
             date=date_str,
-            title=entry.title,
+            title=title,
             starred=entry.starred,
-            tags=", ".join([tag[1:] for tag in entry.tags]),
-            dayone=dayone_attributes,
+            tags=tags,
+            permalink=permalink,
             body=newbody,
             space="",
         )
